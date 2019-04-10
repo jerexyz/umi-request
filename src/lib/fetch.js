@@ -1,21 +1,21 @@
-import "whatwg-fetch";
-import defaultInterceptor from "../defaultInterceptor";
+import 'whatwg-fetch';
+import defaultInterceptor from '../defaultInterceptor';
 
 const requestInterceptors = [];
 export const responseInterceptors = [];
 
 function fetch(url, options = {}) {
-  if (typeof url !== "string") throw new Error("url MUST be a string");
+  if (typeof url !== 'string') throw new Error('url MUST be a string');
 
   // 执行 request 的拦截器
-  requestInterceptors.concat([defaultInterceptor]).forEach(handler => {
-    const ret = handler(url, options);
+  requestInterceptors.concat([defaultInterceptor]).forEach(async handler => {
+    const ret = handler instanceof Promise ? await handler(url, options) : handler(url, options);
     url = ret.url || url;
     options = ret.options || options;
   });
 
   // 将 method 改为大写
-  options.method = options.method ? options.method.toUpperCase() : "GET";
+  options.method = options.method ? options.method.toUpperCase() : 'GET';
 
   // 请求数据
   let response = window.fetch(url, options);
@@ -32,13 +32,13 @@ fetch.interceptors = {
   request: {
     use: handler => {
       requestInterceptors.push(handler);
-    }
+    },
   },
   response: {
     use: handler => {
       responseInterceptors.push(handler);
-    }
-  }
+    },
+  },
 };
 
 export default fetch;
